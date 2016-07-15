@@ -11,4 +11,6 @@ A Linux command-line utility for applying kernel-based filters to PNGs
 
 ## Installation
 
-Run the Makefile
+1. Create a `build` directory
+2. Run `cmake ..` from within it
+3. `make`
