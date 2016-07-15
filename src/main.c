@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include "main.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	usage(argv[0]);
 }
 
-void usage(char *utilname) {
+void usage(char *utilname)
+{
 	printf("Usage: %s <input_file> <output_file> [options]\n", utilname);
 	printf("WARNING: UTILITY IS NOT FULLY FUNCTIONAL YET\n");
 	printf("Options:\n");
-	//TODO: add optional arguments for each filter option
+	/* TODO: add optional arguments for each filter option */
 	printf("  -b --blur             Apply box blur\n");
 	printf("  -g --gaussian         Apply Gaussian blur\n");
 	printf("  -s --sharpen          Sharpen image\n");
