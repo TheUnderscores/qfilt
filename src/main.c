@@ -1,9 +1,77 @@
 #include <stdio.h>
+#include <getopt.h>
+
 #include "main.h"
 
 int main(int argc, char *argv[])
 {
-	usage(argv[0]);
+	int c;
+	int long_option_index = 0;
+	static struct option long_opts[] = {
+		{"help", no_argument, NULL, 'h'},
+		{"blur", no_argument, NULL, 'b'},
+		{"gaussian", no_argument, NULL, 'g'},
+		{"sharpen", no_argument, NULL, 's'},
+		{"unsharpen", no_argument, NULL, 'u'},
+		{"outline", no_argument, NULL, 'o'},
+		{"emboss", no_argument, NULL, 'e'},
+		{"topsobel", no_argument, NULL, 1},
+		{"bottomsobel", no_argument, NULL, 2},
+		{"rightsobel", no_argument, NULL, 3},
+		{"leftsobel", no_argument, NULL, 4},
+		{"custom", required_argument, NULL, 'c'},
+		{NULL, 0, NULL, 0}
+	};
+
+	while (1) {
+		c = getopt_long(argc, argv, "hbgsuoec:",
+			long_opts, &long_option_index);
+
+		if (c == -1) break;
+
+		switch (c) {
+		case 'b':
+			printf("Selected box blur\n");
+			break;
+		case 'g':
+			printf("Selected gaussian blur\n");
+			break;
+		case 's':
+			printf("Selected sharpen\n");
+			break;
+		case 'u':
+			printf("Selected unsharpen\n");
+			break;
+		case 'o':
+			printf("Selected outline\n");
+			break;
+		case 'e':
+			printf("Selected emboss\n");
+			break;
+		case 1:
+			printf("Selected top sobel filter\n");
+			break;
+		case 2:
+			printf("Selected bottom sobel filter\n");
+			break;
+		case 3:
+			printf("Selected right sobel filter\n");
+			break;
+		case 4:
+			printf("Selected left sobel filter\n");
+			break;
+		case 'c':
+			printf("Selected custom '%s'\n", optarg);
+			break;
+		case '?':
+			/*
+			 * getopt_long sees an invalid flag or missing required
+			 * argument. Since getopt_long has told the user of the
+			 * issue, all we do now is bail out.
+			 */
+			return -1;
+		}
+	}
 }
 
 void usage(char *utilname)
