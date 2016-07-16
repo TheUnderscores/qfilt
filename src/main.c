@@ -30,6 +30,9 @@ int main(int argc, char *argv[])
 		if (c == -1) break;
 
 		switch (c) {
+		case 'h':
+			usage(argv[0]);
+			return 0;
 		case 'b':
 			printf("Selected box blur\n");
 			break;
@@ -80,6 +83,7 @@ void usage(char *utilname)
 	printf("WARNING: UTILITY IS NOT FULLY FUNCTIONAL YET\n");
 	printf("Options:\n");
 	/* TODO: add optional arguments for each filter option */
+	printf("  -h --help             Display this help\n");
 	printf("  -b --blur             Apply box blur\n");
 	printf("  -g --gaussian         Apply Gaussian blur\n");
 	printf("  -s --sharpen          Sharpen image\n");
