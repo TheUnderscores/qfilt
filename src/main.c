@@ -2,6 +2,7 @@
 #include <getopt.h>
 
 #include "main.h"
+#include "img.h"
 
 int main(int argc, char *argv[])
 {
@@ -100,6 +101,20 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "%s: missing file arguments\n", argv[0]);
 		return -1;
 	}
+
+	if (img_read(input_file) == IMG_FAIL) {
+		fprintf(stderr, "[main] Failed to load image\n");
+		return -1;
+	}
+	if (img_write(output_file) == IMG_FAIL) {
+		fprintf(stderr, "[main] Failed to write image\n");
+		return -1;
+	}
+
+	img_cleanup();
+	printf("Filter successfully applied\n");
+	printf("DISCLAIMER: FILTER NOT APPLIED\n");//TODO: remove disclaimer when appropriate
+	return 0;
 }
 
 void usage(char *utilname)
