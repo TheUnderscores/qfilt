@@ -5,15 +5,19 @@
 
 int main(int argc, char *argv[])
 {
+	const char *input_file = NULL;
+	const char *output_file = NULL;
 	int c;
 	int long_option_index = 0;
 	static struct option long_opts[] = {
 		{"help", no_argument, NULL, 'h'},
+		{"input", required_argument, NULL, 'i'},
+		{"output", required_argument, NULL, 'o'},
 		{"blur", no_argument, NULL, 'b'},
 		{"gaussian", no_argument, NULL, 'g'},
 		{"sharpen", no_argument, NULL, 's'},
 		{"unsharpen", no_argument, NULL, 'u'},
-		{"outline", no_argument, NULL, 'o'},
+		{"outline", no_argument, NULL, 'l'},
 		{"emboss", no_argument, NULL, 'e'},
 		{"topsobel", no_argument, NULL, 1},
 		{"bottomsobel", no_argument, NULL, 2},
@@ -24,7 +28,7 @@ int main(int argc, char *argv[])
 	};
 
 	while (1) {
-		c = getopt_long(argc, argv, "hbgsuoec:",
+		c = getopt_long(argc, argv, "hi:o:bgsulec:",
 			long_opts, &long_option_index);
 
 		if (c == -1) break;
@@ -33,6 +37,14 @@ int main(int argc, char *argv[])
 		case 'h':
 			usage(argv[0]);
 			return 0;
+		case 'i':
+			input_file = optarg;
+			printf("Set input file to '%s'\n", input_file);
+			break;
+		case 'o':
+			output_file = optarg;
+			printf("Set output file to '%s'\n", output_file);
+			break;
 		case 'b':
 			printf("Selected box blur\n");
 			break;
@@ -45,7 +57,7 @@ int main(int argc, char *argv[])
 		case 'u':
 			printf("Selected unsharpen\n");
 			break;
-		case 'o':
+		case 'l':
 			printf("Selected outline\n");
 			break;
 		case 'e':
@@ -75,6 +87,19 @@ int main(int argc, char *argv[])
 			return -1;
 		}
 	}
+
+	/*
+	 * Do we have both input and output files? If not, check if we have
+	 * enough extra arguments to fill the slots. We'll just implicitly
+	 * assume them to be input and output file in that order.
+	 */
+	if ((!input_file && !output_file) && argc >= optind + 2) {
+		input_file = argv[optind + 1];
+		output_file = argv[optind + 2];
+	} else if (!input_file || !output_file) {
+		fprintf(stderr, "%s: missing file arguments\n", argv[0]);
+		return -1;
+	}
 }
 
 void usage(char *utilname)
@@ -84,11 +109,13 @@ void usage(char *utilname)
 	printf("Options:\n");
 	/* TODO: add optional arguments for each filter option */
 	printf("  -h --help             Display this help\n");
+	printf("  -i --input            Input file\n");
+	printf("  -o --output           Output file\n");
 	printf("  -b --blur             Apply box blur\n");
 	printf("  -g --gaussian         Apply Gaussian blur\n");
 	printf("  -s --sharpen          Sharpen image\n");
 	printf("  -u --unsharpen        Unsharpen image\n");
-	printf("  -o --outline          Outline image\n");
+	printf("  -l --outline          Outline image\n");
 	printf("  -e --emboss           Emboss image\n");
 	printf("  --topsobel            Apply top Sobel filter\n");
 	printf("  --bottomsobel         Apply bottom Sobel filter\n");
