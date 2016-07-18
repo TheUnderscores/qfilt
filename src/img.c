@@ -18,7 +18,7 @@ int img_read(const char *fn)
 	/* TODO: reject image if it has an alpha channel */
 	FILE *fp;
 	png_byte sig[8];
-	int y;
+	int y, ret;
 
 	if (img_is_loaded())
 		img_cleanup();
@@ -26,42 +26,40 @@ int img_read(const char *fn)
         fp = fopen(fn, "rb");
 	if (!fp) {
 		fprintf(stderr, "read_img: File %s could not be opened for reading\n", fn);
-		return IMG_FAIL;
+		ret = IMG_FAIL;
+		goto img_read_cleanup;
 	}
 
 	/* confirm valid PNG signature in file header */
 	if (fread(sig, 1, 8, fp) != 8) {
 		fprintf(stderr, "read_img: File %s reading stopped short\n", fn);
-		fclose(fp);
-		return IMG_FAIL;
+		ret = IMG_FAIL;
+		goto img_read_cleanup;
 	}
 	if (png_sig_cmp(sig, 0, 8)) {
 		fprintf(stderr, "read_img: File %s is not recognized as a PNG file\n", fn);
-		fclose(fp);
-		return IMG_FAIL;
+		ret = IMG_FAIL;
+		goto img_read_cleanup;
 	}
 
 	/* initialize libpng structs */
 	png_p = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_p) {
-		png_destroy_read_struct(&png_p, &info_p, NULL);
-		fclose(fp);
-		return IMG_FAIL;
+		fprintf(stderr, "read_img: png_create_read_struct failed", fn);
+		ret = IMG_FAIL;
 	}
 	info_p = png_create_info_struct(png_p);
 	if (!info_p) {
-	        fprintf(stderr, "read_img: png_create_read_struct failed\n");
-		png_destroy_read_struct(&png_p, &info_p, NULL);
-		fclose(fp);
-		return IMG_FAIL;
+	        fprintf(stderr, "read_img: png_create_info_struct failed\n");
+		ret = IMG_FAIL;
+	        goto img_read_cleanup;
 	}
 
 	/* setup jump buffer for error handling */
 	if (setjmp(png_jmpbuf(png_p))) {
 		fprintf(stderr, "read_img: Error setting jump buffer\n");
-		png_destroy_read_struct(&png_p, &info_p, NULL);
-		fclose(fp);
-		return IMG_FAIL;
+		ret = IMG_FAIL;
+	        goto img_read_cleanup;
 	}
 
 	png_init_io(png_p, fp);
@@ -78,19 +76,24 @@ int img_read(const char *fn)
 	/* read file */
 	if (setjmp(png_jmpbuf(png_p))) {
 		fprintf(stderr, "read_img: Error setting jump buffer\n");
-	        png_destroy_read_struct(&png_p, &info_p, NULL);
-		fclose(fp);
-		return IMG_FAIL;
+		ret = IMG_FAIL;
+	        goto img_read_cleanup;
 	}
 	rows_p = malloc(sizeof(png_bytep) * h);
 	for (y=0; y<h; y++)
 		rows_p[y] = malloc(png_get_rowbytes(png_p, info_p));
 	png_read_image(png_p, rows_p);
 
-	fclose(fp);
 	imgLoaded = 1;
+	ret = IMG_SUCCESS;
 
-	return IMG_SUCCESS;
+ img_read_cleanup:
+	if (ret == IMG_FAIL)
+		if (png_p && info_p)
+			png_destroy_read_struct(&png_p, &info_p, NULL);
+	if (fp)
+		fclose(fp);
+	return ret;
 }
 
 int img_is_loaded(void)
