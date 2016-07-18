@@ -4,6 +4,8 @@
 #include "main.h"
 #include "img.h"
 
+/* TODO: create function for passing errors */
+
 int main(int argc, char *argv[])
 {
 	const char *input_file = NULL;
@@ -103,17 +105,18 @@ int main(int argc, char *argv[])
 	}
 
 	if (img_read(input_file) == IMG_FAIL) {
-		fprintf(stderr, "[main] Failed to load image\n");
+		fprintf(stderr, "%s: main: Failed to load image\n", argv[0]);
 		return -1;
 	}
 	if (img_write(output_file) == IMG_FAIL) {
-		fprintf(stderr, "[main] Failed to write image\n");
+		fprintf(stderr, "%s: main: Failed to write image\n", argv[0]);
 		return -1;
 	}
 
 	img_cleanup();
 	printf("Filter successfully applied\n");
-	printf("DISCLAIMER: FILTER NOT APPLIED\n");//TODO: remove disclaimer when appropriate
+	/* TODO: remove disclaimer when appropriate */
+	printf("DISCLAIMER: FILTER NOT APPLIED\n");
 	return 0;
 }
 

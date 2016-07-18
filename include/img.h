@@ -1,5 +1,3 @@
-#include <png.h>
-
 #define IMG_SUCCESS 0
 #define IMG_FAIL    1
 
