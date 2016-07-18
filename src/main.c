@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
 	 * assume them to be input and output file in that order.
 	 */
 	if ((!input_file && !output_file) && argc >= optind + 2) {
-		input_file = argv[optind + 1];
-		output_file = argv[optind + 2];
+		input_file = argv[optind];
+		output_file = argv[optind + 1];
 	} else if (!input_file || !output_file) {
 		fprintf(stderr, "%s: missing file arguments\n", argv[0]);
 		return -1;
