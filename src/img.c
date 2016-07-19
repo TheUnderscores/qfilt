@@ -4,12 +4,10 @@
 
 #include "img.h"
 
-static png_structp png_p = NULL;
-static png_infop info_p = NULL;
-
-static int w, h; //width and height
-static png_byte colorType, bitDep;
-static png_bytep *rows_p = NULL;
+static png_structp png_p = NULL; // loaded PNG struct
+static png_infop info_p = NULL; // loaded PNG info struct
+static int w, h; // width and height
+static png_bytep *rows_p = NULL; // pixel data
 
 static int imgLoaded = 0;
 
@@ -68,8 +66,6 @@ int img_read(const char *fn)
 
 	w = png_get_image_width(png_p, info_p);
 	h = png_get_image_height(png_p, info_p);
-	colorType = png_get_color_type(png_p, info_p);
-	bitDep = png_get_bit_depth(png_p, info_p);
 	png_set_interlace_handling(png_p);
 	png_read_update_info(png_p, info_p);
 
@@ -102,13 +98,86 @@ int img_is_loaded(void)
 
 int img_write(const char *fn)
 {
-	FILE *fp = fopen(fn, "wb");
+	FILE *fp;
+	int ret;
+	png_structp wPng_p;
+	png_infop wInfo_p;
+	png_byte colorType, bitDep;
+
 	if (!img_is_loaded()) {
 		fprintf(stderr, "write_img: No image is loaded\n");
 		return IMG_FAIL;
 	}
+
+	fp = fopen(fn, "wb");
+	if (!fp) {
+		fprintf(stderr, "img_write: File %s could not be opened for reading\n", fn);
+		ret = IMG_FAIL;
+		goto img_write_cleanup;
+	}
+
+	/* initialize libpng structs */
+        wPng_p = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+					 NULL, NULL, NULL);
+	if (!wPng_p) {
+		fprintf(stderr, "img_write: png_create_write_struct failed\n", fn);
+		ret = IMG_FAIL;
+		goto img_write_cleanup;
+	}
+	wInfo_p = png_create_info_struct(wPng_p);
+	if (!wInfo_p) {
+		fprintf(stderr, "img_write: png_create_info_struct failed\n", fn);
+		ret = IMG_FAIL;
+		goto img_write_cleanup;
+	}
+	if (setjmp(png_jmpbuf(wPng_p))) {
+		fprintf(stderr, "img_read: Error setting jump buffer while initializing IO\n");
+		ret = IMG_FAIL;
+	        goto img_write_cleanup;
+	}
+	png_init_io(wPng_p, fp);
+
+	/* write PNG header */
+	if (setjmp(png_jmpbuf(wPng_p))) {
+		fprintf(stderr, "img_read: Error setting jump buffer while writing header\n");
+		ret = IMG_FAIL;
+	        goto img_write_cleanup;
+	}
+
+	colorType = png_get_color_type(png_p, info_p);
+	bitDep = png_get_bit_depth(png_p, info_p);
+	png_set_IHDR(wPng_p,
+		     wInfo_p,
+		     w,
+		     h,
+		     bitDep,
+		     colorType,
+		     PNG_INTERLACE_NONE,
+		     PNG_COMPRESSION_TYPE_BASE,
+		     PNG_FILTER_TYPE_BASE);
+	png_write_info(wPng_p, wInfo_p);
+
+	/* write loaded PNG bytes from rows_p */
+	if (setjmp(png_jmpbuf(wPng_p))) {
+		fprintf(stderr, "img_read: Error setting jump buffer while writing bytes\n");
+		ret = IMG_FAIL;
+		goto img_write_cleanup;
+	}
+	png_write_image(wPng_p, rows_p);
+
+	if (setjmp(png_jmpbuf(wPng_p))) {
+		fprintf(stderr, "img_read: Error setting jump buffer during end of write\n");
+		ret = IMG_FAIL;
+		goto img_write_cleanup;
+	}
+	png_write_end(wPng_p, NULL);
+	ret = IMG_SUCCESS;
+
+ img_write_cleanup:
+	if (ret == IMG_FAIL && wPng_p)
+		png_destroy_write_struct(&wPng_p, &wInfo_p);
 	fclose(fp);
-	return IMG_SUCCESS;
+	return ret;
 }
 		
 void img_cleanup(void)
