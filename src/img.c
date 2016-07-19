@@ -25,19 +25,19 @@ int img_read(const char *fn)
 
         fp = fopen(fn, "rb");
 	if (!fp) {
-		fprintf(stderr, "read_img: File %s could not be opened for reading\n", fn);
+		fprintf(stderr, "img_read: File %s could not be opened for reading\n", fn);
 		ret = IMG_FAIL;
 		goto img_read_cleanup;
 	}
 
 	/* confirm valid PNG signature in file header */
 	if (fread(sig, 1, 8, fp) != 8) {
-		fprintf(stderr, "read_img: File %s reading stopped short\n", fn);
+		fprintf(stderr, "img_read: File %s reading stopped short\n", fn);
 		ret = IMG_FAIL;
 		goto img_read_cleanup;
 	}
 	if (png_sig_cmp(sig, 0, 8)) {
-		fprintf(stderr, "read_img: File %s is not recognized as a PNG file\n", fn);
+		fprintf(stderr, "img_read: File %s is not recognized as a PNG file\n", fn);
 		ret = IMG_FAIL;
 		goto img_read_cleanup;
 	}
@@ -45,19 +45,19 @@ int img_read(const char *fn)
 	/* initialize libpng structs */
 	png_p = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_p) {
-		fprintf(stderr, "read_img: png_create_read_struct failed", fn);
+		fprintf(stderr, "img_read: png_create_read_struct failed", fn);
 		ret = IMG_FAIL;
 	}
 	info_p = png_create_info_struct(png_p);
 	if (!info_p) {
-	        fprintf(stderr, "read_img: png_create_info_struct failed\n");
+	        fprintf(stderr, "img_read: png_create_info_struct failed\n");
 		ret = IMG_FAIL;
 	        goto img_read_cleanup;
 	}
 
 	/* setup jump buffer for error handling */
 	if (setjmp(png_jmpbuf(png_p))) {
-		fprintf(stderr, "read_img: Error setting jump buffer\n");
+		fprintf(stderr, "img_read: Error setting jump buffer\n");
 		ret = IMG_FAIL;
 	        goto img_read_cleanup;
 	}
@@ -75,7 +75,7 @@ int img_read(const char *fn)
 
 	/* read file */
 	if (setjmp(png_jmpbuf(png_p))) {
-		fprintf(stderr, "read_img: Error setting jump buffer\n");
+		fprintf(stderr, "img_read: Error setting jump buffer\n");
 		ret = IMG_FAIL;
 	        goto img_read_cleanup;
 	}
