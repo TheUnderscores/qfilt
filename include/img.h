@@ -31,6 +31,16 @@ int img_is_loaded(void);
 png_bytep *img_get_rows(int *width, int *height);
 
 /**
+ * Replaces the local images rows with the supplied new rows.
+ *
+ * @param new_rows Pointer to new rows array.
+ * @param new_w Width of new image.
+ * @param new_h Height of new image.
+ * @return Nothing.
+ */
+void img_replace_rows(png_bytep *new_rows, int new_w, int new_h);
+
+/**
  * Writes PNG in memory to disk.
  *
  * @param fn Path to new PNG file.
