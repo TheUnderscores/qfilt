@@ -1,3 +1,5 @@
+#include <png.h>
+
 #define IMG_SUCCESS 0
 #define IMG_FAIL    1
 
@@ -16,6 +18,15 @@ int img_read(const char *fn);
  * @return 1 if PNG loaded, 0 if not
  */
 int img_is_loaded(void);
+
+/**
+ * Gets the rows of pixel data gotten procured the loaded PNG.
+ * Editting these values directly edits the loaded PNG's pixels.
+ * Such changes will be reflected in img_write().
+ *
+ * @return Pointer to rows of pixel data on success, NULL on failure.
+ */
+png_bytep *img_get_rows(void);
 
 /**
  * Writes PNG in memory to disk.

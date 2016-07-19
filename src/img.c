@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <png.h>
 
 #include "img.h"
 
@@ -94,6 +93,15 @@ int img_read(const char *fn)
 int img_is_loaded(void)
 {
 	return imgLoaded;
+}
+
+png_bytep *img_get_rows(void)
+{
+	if (!img_is_loaded()) {
+		fprintf(stderr, "img_get_rows: No image is loaded\n");
+		return NULL;
+	}
+	return rows_p;
 }
 
 int img_write(const char *fn)
