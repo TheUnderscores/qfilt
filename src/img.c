@@ -105,12 +105,14 @@ int img_is_loaded(void)
 	return imgLoaded;
 }
 
-png_bytep *img_get_rows(void)
+png_bytep *img_get_rows(int *width, int *height)
 {
 	if (!img_is_loaded()) {
 		fprintf(stderr, "img_get_rows: No image is loaded\n");
 		return NULL;
 	}
+	*width = w;
+	*height = h;
 	return rows_p;
 }
 

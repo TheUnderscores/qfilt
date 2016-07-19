@@ -24,9 +24,11 @@ int img_is_loaded(void);
  * Editting these values directly edits the loaded PNG's pixels.
  * Such changes will be reflected in img_write().
  *
+ * @param width User-supplied pointer to store width in.
+ * @param height User-supplied pointer to store height in.
  * @return Pointer to rows of pixel data on success, NULL on failure.
  */
-png_bytep *img_get_rows(void);
+png_bytep *img_get_rows(int *width, int *height);
 
 /**
  * Writes PNG in memory to disk.
