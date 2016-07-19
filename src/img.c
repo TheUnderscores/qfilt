@@ -88,9 +88,8 @@ int img_read(const char *fn)
 	ret = IMG_SUCCESS;
 
  img_read_cleanup:
-	if (ret == IMG_FAIL)
-		if (png_p && info_p)
-			png_destroy_read_struct(&png_p, &info_p, NULL);
+	if (ret == IMG_FAIL && (png_p && info_p))
+		png_destroy_read_struct(&png_p, &info_p, NULL);
 	if (fp)
 		fclose(fp);
 	return ret;
