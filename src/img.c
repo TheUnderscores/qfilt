@@ -12,7 +12,6 @@ static int imgLoaded = 0;
 
 int img_read(const char *fn)
 {
-	/* TODO: reject image if it has an alpha channel */
 	FILE *fp;
 	png_byte sig[8];
 	int y, ret;
@@ -78,6 +77,14 @@ int img_read(const char *fn)
 	for (y=0; y<h; y++)
 		rows_p[y] = malloc(png_get_rowbytes(png_p, info_p));
 	png_read_image(png_p, rows_p);
+
+	/* do not process PNGs that are not plain RGB */
+        /* TODO: add support for alpha channels */
+	if (png_get_color_type(png_p, info_p) != PNG_COLOR_TYPE_RGB) {
+		fprintf(stderr, "img_read: Non-RGB PNG files are not yet supported\n");
+		ret = IMG_FAIL;
+		goto img_read_cleanup;
+	}
 
 	imgLoaded = 1;
 	ret = IMG_SUCCESS;
