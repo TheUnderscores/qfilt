@@ -1,8 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <getopt.h>
+#include <png.h>
 
 #include "main.h"
 #include "img.h"
+#include "filter.h"
 
 /* TODO: create function for passing errors */
 
@@ -108,6 +112,41 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "%s: main: Failed to load image\n", argv[0]);
 		return -1;
 	}
+
+	int img_w, img_h;
+	png_bytep *src_rows = img_get_rows(&img_w, &img_h);
+
+	if (!src_rows) return -1;
+
+	/*
+	 * TODO: This filter is temporary until we have more and have
+	 * implemented the selection mechanism!
+	 */
+
+	struct Filter blur_filter;
+
+	blur_filter.size = 3;
+	blur_filter.array = calloc(9 , sizeof(*blur_filter.array));
+
+	blur_filter.array[0] = ((double) 1) / 16;
+	blur_filter.array[1] = ((double) 1) / 8;
+	blur_filter.array[2] = ((double) 1) / 16;
+	blur_filter.array[3] = ((double) 1) / 8;
+	blur_filter.array[4] = ((double) 1) / 4;
+	blur_filter.array[5] = ((double) 1) / 8;
+	blur_filter.array[6] = ((double) 1) / 16;
+	blur_filter.array[7] = ((double) 1) / 8;
+	blur_filter.array[8] = ((double) 1) / 16;
+
+	png_bytep *new_rows = filter_apply(blur_filter, src_rows, img_w, img_h);
+
+	if (!new_rows) {
+		perror("filter_apply: couldn't apply filter");
+		return -1;
+	}
+
+	img_replace_rows(new_rows, img_w, img_h);
+
 	if (img_write(output_file) == IMG_FAIL) {
 		fprintf(stderr, "%s: main: Failed to write image\n", argv[0]);
 		return -1;
