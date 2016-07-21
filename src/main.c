@@ -154,8 +154,6 @@ int main(int argc, char *argv[])
 
 	img_cleanup();
 	printf("Filter successfully applied\n");
-	/* TODO: remove disclaimer when appropriate */
-	printf("DISCLAIMER: FILTER NOT APPLIED\n");
 	return 0;
 }
 
