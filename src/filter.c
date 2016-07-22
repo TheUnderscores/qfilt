@@ -32,7 +32,7 @@ static int clamp(int x, int l, int h)
  * @param high Highest number of range, exclusive.
  * @return x, wrapped so that `low <= x < high`.
  */
-static int filter_wrap_int(int x, int low, int high)
+static int wrap_int(int x, int low, int high)
 {
 	int range = high - low;
 	x = (x - low) % range;
@@ -47,9 +47,9 @@ static void filter_apply_at_pixel(double *filter_tmp, struct Filter filter,
 	int dy, dx, new_y, new_x;
 
 	for (dy = -range; dy <= range; dy++) {
-		new_y = filter_wrap_int(y + dy, 0, h);
+		new_y = wrap_int(y + dy, 0, h);
 		for (dx = -range; dx <= range; dx++, i++) {
-			new_x = filter_wrap_int(x + dx, 0, w);
+			new_x = wrap_int(x + dx, 0, w);
 			filter_tmp[i * 3] = img[new_y][new_x * 3]
 				* filter.array[i];
 			filter_tmp[(i * 3) + 1] = img[new_y][(new_x * 3) + 1]
