@@ -60,6 +60,26 @@ static void filter_apply_at_pixel(double *filter_tmp, struct Filter filter,
 	}
 }
 
+struct Filter filter_create(int size, double *matrix) {
+	struct Filter filter;
+	/* ensure `size` if an odd number */
+	size = (size / 2) * 2 + 1; // round down
+	filter.size = size;
+	filter.array = calloc(size * size, sizeof(double));
+	memcpy(filter.array, matrix, size * size * sizeof(double));
+	return filter;
+}
+
+void filter_delete(struct Filter *filter) {
+	free(filter->array);
+}
+
+void filter_mult(struct Filter *filter, double mult) {
+	int i;
+	for (i = 0; i < filter->size * filter->size; i++)
+		filter->array[i] *= mult;
+}
+
 png_bytep *filter_apply(struct Filter filter, png_bytep *img, int w, int h)
 {
 	png_bytep *filtered_img;

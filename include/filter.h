@@ -9,6 +9,31 @@ struct Filter {
 };
 
 /**
+ * Creates a filter to pass to `filter_apply()`.
+ *
+ * @param size Number of rows and columns (individually, not cumulatively) in
+ *    the filter's matrix. Must be an odd number, greater than or equal to 1.
+ * @param matrix Array of matrix values. Every increment of length `size`
+ *    is a row.
+ * @return New filter on success, NULL on failure.
+ */
+struct Filter filter_create(int size, double *matrix);
+
+/**
+ * Deletes a filter created by `filter_create()`.
+ *
+ * @param filter Filter to delete.
+ */
+void filter_delete(struct Filter *filter);
+
+/**
+ * Multiplies all the values in a matrix by a value.
+ *
+ * @param mult The multiplier to apply.
+ */
+void filter_mult(struct Filter *filter, double mult);
+
+/**
  * Apply a kernel filter to image data.
  *
  * @param filter The filter to use.

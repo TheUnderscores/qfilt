@@ -123,22 +123,14 @@ int main(int argc, char *argv[])
 	 * implemented the selection mechanism!
 	 */
 
-	struct Filter blur_filter;
+	/* box blur */
+	double mat[9] = { 1, 1, 1,
+			  1, 1, 1,
+			  1, 1, 1 };
+	struct Filter filter = filter_create(3, mat);
+	filter_mult(&filter, (double) 1 / 9);
 
-	blur_filter.size = 3;
-	blur_filter.array = calloc(9 , sizeof(*blur_filter.array));
-
-	blur_filter.array[0] = ((double) 1) / 16;
-	blur_filter.array[1] = ((double) 1) / 8;
-	blur_filter.array[2] = ((double) 1) / 16;
-	blur_filter.array[3] = ((double) 1) / 8;
-	blur_filter.array[4] = ((double) 1) / 4;
-	blur_filter.array[5] = ((double) 1) / 8;
-	blur_filter.array[6] = ((double) 1) / 16;
-	blur_filter.array[7] = ((double) 1) / 8;
-	blur_filter.array[8] = ((double) 1) / 16;
-
-	png_bytep *new_rows = filter_apply(blur_filter, src_rows, img_w, img_h);
+	png_bytep *new_rows = filter_apply(filter, src_rows, img_w, img_h);
 
 	if (!new_rows) {
 		perror("filter_apply: couldn't apply filter");
@@ -152,6 +144,7 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
+        filter_delete(&filter);
 	img_cleanup();
 	printf("Filter successfully applied\n");
 	return 0;
