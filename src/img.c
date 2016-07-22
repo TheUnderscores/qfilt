@@ -105,13 +105,27 @@ int img_is_loaded(void)
 	return imgLoaded;
 }
 
-png_bytep *img_get_rows(void)
+png_bytep *img_get_rows(int *width, int *height)
 {
 	if (!img_is_loaded()) {
 		fprintf(stderr, "img_get_rows: No image is loaded\n");
 		return NULL;
 	}
+	*width = w;
+	*height = h;
 	return rows_p;
+}
+
+void img_replace_rows(png_bytep *new_rows, int new_w, int new_h)
+{
+	int i;
+
+	for (i = 0; i < h; i++) free(rows_p[i]);
+	free(rows_p);
+
+	rows_p = new_rows;
+	w = new_w;
+	h = new_h;
 }
 
 int img_write(const char *fn)
