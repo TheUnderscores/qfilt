@@ -43,27 +43,21 @@ static void filter_apply_at_pixel(double *filter_tmp, struct Filter filter,
 				  png_bytep *img, int w, int h, int x, int y)
 {
 	int i = 0;
-	int dy, dx;
+	int range = filter.size / 2;
+	int dy, dx, new_y, new_x;
 
-	/*
-	 * TODO: This is icky, but so is the whole section... it needs a
-	 * cleanup.
-	 */
-#define WRAP_X(x) filter_wrap_int((x), 0, w)
-#define WRAP_Y(y) filter_wrap_int((y), 0, h)
-
-	for (dy = -(filter.size / 2); dy <= (filter.size / 2); dy++)
-		for (dx = -(filter.size / 2); dx <= filter.size / 2; dx++, i++) {
-			filter_tmp[i * 3] =
-				img[WRAP_Y(y + dy)][WRAP_X(x + dx) * 3]
+	for (dy = -range; dy <= range; dy++) {
+		new_y = filter_wrap_int(y + dy, 0, h);
+		for (dx = -range; dx <= range; dx++, i++) {
+			new_x = filter_wrap_int(x + dx, 0, w);
+			filter_tmp[i * 3] = img[new_y][new_x * 3]
 				* filter.array[i];
-			filter_tmp[(i * 3) + 1] =
-				img[WRAP_Y(y + dy)][(WRAP_X(x + dx) * 3) + 1]
+			filter_tmp[(i * 3) + 1] = img[new_y][(new_x * 3) + 1]
 				* filter.array[i];
-			filter_tmp[(i * 3) + 2] =
-				img[WRAP_Y(y + dy)][(WRAP_X(x + dx) * 3) + 2]
+			filter_tmp[(i * 3) + 2] = img[new_y][(new_x * 3) + 2]
 				* filter.array[i];
 		}
+	}
 }
 
 png_bytep *filter_apply(struct Filter filter, png_bytep *img, int w, int h)
