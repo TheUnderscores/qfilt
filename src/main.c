@@ -13,15 +13,13 @@
  *   - take parameters for some filters (e.g. radius for gaussian blur)
  *   - allow for stacking of filters (applying multiple filters)
  *   - use function to determine values of gaussian blur
+ *   - safely exit qfilt if a filter is not successfully selected; do not write to output
+ *   - restrict parameter values
+ *   - using threading to increase performance
  */
 
 int filtSelected = 0;
 
-double mat_boxblur[] = {
-	1.0/9, 1.0/9, 1.0/9,
-	1.0/9, 1.0/9, 1.0/9,
-	1.0/9, 1.0/9, 1.0/9
-};
 double mat_gauss[] = {
 	1.0/16, 2.0/16, 1.0/16,
 	2.0/16, 4.0/16, 2.0/16,
@@ -70,7 +68,7 @@ double mat_ltSob[] = {
 	1, 0, -1
 };
 
-void selectFilter(struct Filter *filt, int size, double mat[], const char *filtName) {
+void selectFilter(struct Filter *filt, unsigned int size, double mat[], const char *filtName) {
 	struct Filter newFilt;
 	if (filtSelected)
 		printf("Cannot select %s; filter stacking is not yet supported\n", filtName);
@@ -91,14 +89,16 @@ int main(int argc, char *argv[])
 {
 	const char *input_file = NULL;
 	const char *output_file = NULL;
+	char *end_p;
 	int c;
+        int filtRadius;
 	int long_option_index = 0;
 	struct Filter filter;
 	static struct option long_opts[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"input", required_argument, NULL, 'i'},
 		{"output", required_argument, NULL, 'o'},
-		{"blur", no_argument, NULL, 'b'},
+		{"blur", optional_argument, NULL, 'b'},
 		{"gaussian", no_argument, NULL, 'g'},
 		{"sharpen", no_argument, NULL, 's'},
 		{"unsharpen", no_argument, NULL, 'u'},
@@ -131,7 +131,21 @@ int main(int argc, char *argv[])
 			printf("Set output file to '%s'\n", output_file);
 			break;
 		case 'b':
-			selectFilter(&filter, size_boxblur, mat_boxblur, "box blur");
+			if (filtSelected)
+				printf("Cannot select box blur; filter stacking is not yet supported\n");
+			else {
+				if (optarg) {
+					filtRadius = strtol(optarg, &end_p, 10);
+					if (*end_p != '\0' || filtRadius <= 0) {
+						printf("Radius invalid: %s\n", optarg);
+						break;
+					}
+				} else
+					filtRadius = 1;
+				filter = filter_boxblur((unsigned int)filtRadius * 2 + 1);
+				filtSelected = 1;
+				printf("Selected box blur with radius %d\n", filtRadius);
+			}
 			break;
 		case 'g':
 			selectFilter(&filter, size_gauss, mat_gauss, "gaussian");

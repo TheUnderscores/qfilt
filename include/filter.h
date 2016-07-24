@@ -17,7 +17,7 @@ struct Filter {
  *    is a row.
  * @return Complete filter on success, a filter with size 0 on failure.
  */
-struct Filter filter_create(int size, double *matrix);
+struct Filter filter_create(unsigned int size, double *matrix);
 
 /**
  * Deletes a filter created by `filter_create()`.
@@ -32,6 +32,14 @@ void filter_delete(struct Filter *filter);
  * @param mult The multiplier to apply.
  */
 void filter_mult(struct Filter *filter, double mult);
+
+/**
+ * Create a box blur filter.
+ *
+ * @param size Size of box blur.
+ * @return Box blur filter on succuss, filter with `size` 0 on failure.
+ */
+struct Filter filter_boxblur(unsigned int size);
 
 /**
  * Apply a kernel filter to image data.
