@@ -66,6 +66,10 @@ struct Filter filter_create(int size, double *matrix) {
 	size = (size / 2) * 2 + 1; // round down
 	filter.size = size;
 	filter.array = calloc(size * size, sizeof(double));
+	if (!filter.array) {
+		filter.size = 0;
+		return filter;
+	}
 	memcpy(filter.array, matrix, size * size * sizeof(double));
 	return filter;
 }

@@ -15,7 +15,7 @@ struct Filter {
  *    the filter's matrix. Must be an odd number, greater than or equal to 1.
  * @param matrix Array of matrix values. Every increment of length `size`
  *    is a row.
- * @return New filter on success, NULL on failure.
+ * @return Complete filter on success, a filter with size 0 on failure.
  */
 struct Filter filter_create(int size, double *matrix);
 
