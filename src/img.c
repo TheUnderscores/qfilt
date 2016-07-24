@@ -1,6 +1,3 @@
-#ifndef IMG_H
-#define IMG_H
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -221,5 +218,3 @@ void img_cleanup(void)
 	free(rows_p);
 	imgLoaded = 0;
 }
-
-#endif /* IMG_H */

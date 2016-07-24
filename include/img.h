@@ -1,3 +1,6 @@
+#ifndef IMG_H
+#define IMG_H
+
 #include <png.h>
 
 #define IMG_SUCCESS 0
@@ -52,3 +55,5 @@ int img_write(const char *fn);
  * Cleanup image data.
  */
 void img_cleanup(void);
+
+#endif /* IMG_H */
