@@ -8,7 +8,84 @@
 #include "img.h"
 #include "filter.h"
 
-/* TODO: create function for passing errors */
+/* TODO:
+ *   - create function for passing errors
+ *   - take parameters for some filters (e.g. radius for gaussian blur)
+ *   - allow for stacking of filters (applying multiple filters)
+ *   - use function to determine values of gaussian blur
+ */
+
+int filtSelected = 0;
+
+double mat_boxblur[] = {
+	1.0/9, 1.0/9, 1.0/9,
+	1.0/9, 1.0/9, 1.0/9,
+	1.0/9, 1.0/9, 1.0/9
+};
+double mat_gauss[] = {
+	1.0/16, 2.0/16, 1.0/16,
+	2.0/16, 4.0/16, 2.0/16,
+	1.0/16, 2.0/16, 1.0/16
+};
+double mat_sharp[] = {
+	 0, -1,  0,
+	-1,  5, -1,
+	 0, -1,  0,
+};
+double mat_unsharp[] = {
+	-1.0/256, -4.0/256,  -6.0/256,   -4.0/256,  -1.0/256,
+	-4.0/256, -16.0/256, -24.0/256,  -16.0/256, -4.0/256,
+	-6.0/256, -24.0/256,  476.0/256, -24.0/256, -6.0/256,
+	-4.0/256, -16.0/256, -24.0/256,  -16.0/256, -4.0/256,
+	-1.0/256, -4.0/256,  -6.0/256,   -4.0/256,  -1.0/256
+};
+double mat_outline[] = {
+	-1, -1, -1,
+	-1,  8, -1,
+	-1, -1, -1
+};
+double mat_emboss[] = {
+	-2, -1,  0,
+	-1,  1,  1,
+	 0,  1,  2
+};
+double mat_topSob[] = {
+	 1,  2,  1,
+	 0,  0,  0,
+	-1, -2, -1
+};
+double mat_btmSob[] = {
+	-1, -2, -1,
+	 0,  0,  0,
+	 1,  2,  1
+};
+double mat_rtSob[] = {
+	-1, 0, 1,
+	-2, 0, 2,
+	-1, 0, 1
+};
+double mat_ltSob[] = {
+	1, 0, -1,
+	2, 0, -2,
+	1, 0, -1
+};
+
+void selectFilter(struct Filter *filt, int size, double mat[], const char *filtName) {
+	struct Filter newFilt;
+	if (filtSelected)
+		printf("Cannot select %s; filter stacking is not yet supported\n", filtName);
+	else {
+		newFilt = filter_create(size, mat);
+		if (newFilt.size == 0)
+			printf("Failed to select %s\n", filtName);
+		else {
+			if (!filt) filter_delete(filt);
+			*filt = newFilt;
+			printf("Selected %s\n", filtName);
+			filtSelected = 1;
+		}
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +93,7 @@ int main(int argc, char *argv[])
 	const char *output_file = NULL;
 	int c;
 	int long_option_index = 0;
+	struct Filter filter;
 	static struct option long_opts[] = {
 		{"help", no_argument, NULL, 'h'},
 		{"input", required_argument, NULL, 'i'},
@@ -53,37 +131,43 @@ int main(int argc, char *argv[])
 			printf("Set output file to '%s'\n", output_file);
 			break;
 		case 'b':
-			printf("Selected box blur\n");
+			selectFilter(&filter, size_boxblur, mat_boxblur, "box blur");
 			break;
 		case 'g':
-			printf("Selected gaussian blur\n");
+			selectFilter(&filter, size_gauss, mat_gauss, "gaussian");
 			break;
 		case 's':
-			printf("Selected sharpen\n");
+			selectFilter(&filter, size_sharp, mat_sharp, "sharpen");
 			break;
 		case 'u':
-			printf("Selected unsharpen\n");
+			selectFilter(&filter, size_unsharp, mat_unsharp, "unsharpen");
 			break;
 		case 'l':
-			printf("Selected outline\n");
+			selectFilter(&filter, size_outline, mat_outline, "outline");
 			break;
 		case 'e':
-			printf("Selected emboss\n");
+			selectFilter(&filter, size_emboss, mat_emboss, "emboss");
 			break;
 		case 1:
-			printf("Selected top sobel filter\n");
+			selectFilter(&filter, size_topSob, mat_topSob, "top sobel");
 			break;
 		case 2:
-			printf("Selected bottom sobel filter\n");
+			selectFilter(&filter, size_btmSob, mat_btmSob, "bottom sobel");
 			break;
 		case 3:
-			printf("Selected right sobel filter\n");
+			selectFilter(&filter, size_rtSob, mat_rtSob, "right sobel");
 			break;
 		case 4:
-			printf("Selected left sobel filter\n");
+			selectFilter(&filter, size_ltSob, mat_ltSob, "ltSob");
 			break;
 		case 'c':
-			printf("Selected custom '%s'\n", optarg);
+			if (filtSelected)
+				printf("Cannot select custom; filter stacking is not yet supported\n");
+			else {
+				printf("Selected custom '%s'\n", optarg);
+				printf("WARNING: custom filter loading not supported yet!\n");
+				filtSelected = 1;
+			}
 			break;
 		case '?':
 			/*
@@ -117,18 +201,6 @@ int main(int argc, char *argv[])
 	png_bytep *src_rows = img_get_rows(&img_w, &img_h);
 
 	if (!src_rows) return -1;
-
-	/*
-	 * TODO: This filter is temporary until we have more and have
-	 * implemented the selection mechanism!
-	 */
-
-	/* box blur */
-	double mat[9] = { 1, 1, 1,
-			  1, 1, 1,
-			  1, 1, 1 };
-	struct Filter filter = filter_create(3, mat);
-	filter_mult(&filter, (double) 1 / 9);
 
 	png_bytep *new_rows = filter_apply(filter, src_rows, img_w, img_h);
 
