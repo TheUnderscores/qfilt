@@ -28,5 +28,5 @@ you have ${PNG_VERSION_STRING}")
   endif (${PNG_VERSION_STRING} VERSION_LESS "1.6")
 
   include_directories(${PNG_INCLUDE_DIRS})
-  target_link_libraries(qfilt ${PNG_LIBRARIES})
+  target_link_libraries(qfilt -lm ${PNG_LIBRARIES})
 endif (PNG_FOUND)
