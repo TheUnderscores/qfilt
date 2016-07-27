@@ -1,7 +1,8 @@
+#include <math.h>
+#include <png.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <png.h>
 
 #include "filter.h"
 
@@ -60,7 +61,20 @@ static void filter_apply_at_pixel(double *filter_tmp, struct Filter filter,
 	}
 }
 
-struct Filter filter_create(unsigned int size, double *matrix) {
+/**
+ * A guassian distribution function.
+ *
+ * @param x X-coordinate.
+ * @param y Y-coordinate.
+ * @param stdev Standard deviation.
+ */
+static double gauss(double x, double y, double stdev) {
+	double frac = 1 / (2 * M_PI * stdev * stdev);
+	double expon = -(x * x + y * y) / (2 * stdev * stdev);
+	return frac * exp(expon);
+}
+
+struct Filter filter_create(int size, double *matrix) {
 	struct Filter filter;
 	/* ensure `size` if an odd number */
 	size = (size / 2) * 2 + 1; // round down
@@ -69,7 +83,7 @@ struct Filter filter_create(unsigned int size, double *matrix) {
 		filter.size = 0;
 		return filter;
 	} else
-		filter.size = size;
+		filter.size = (int)size;
 	memcpy(filter.array, matrix, size * size * sizeof(double));
 	return filter;
 }
@@ -84,10 +98,18 @@ void filter_mult(struct Filter *filter, double mult) {
 		filter->array[i] *= mult;
 }
 
-struct Filter filter_boxblur(unsigned int size) {
+void filter_norm(struct Filter *filter) {
+	int i;
+	double sum = 0;
+	for (i = 0; i < filter->size * filter->size; i++)
+		sum += filter->array[i];
+	filter_mult(filter, 1.0 / sum);
+}
+
+struct Filter filter_box_blur(int size) {
 	struct Filter filter;
 	double *mat;
-	int i;
+        int i;
 	mat = malloc(size * size * sizeof(double));
 	if (!mat)
 		filter.size = 0;
@@ -95,8 +117,31 @@ struct Filter filter_boxblur(unsigned int size) {
 		for (i = 0; i < size * size; i++) mat[i] = 1;
 		filter = filter_create(size, mat);
 		free(mat);
+		filter_mult(&filter, 1.0 / (size * size));
 	}
-	filter_mult(&filter, 1.0 / (size * size));
+	return filter;
+}
+
+struct Filter filter_gauss_blur(int radius) {
+	struct Filter filter;
+	double *mat;
+	double stdev;
+	int size, x, y;
+	size = radius * 2 + 1;
+	mat = malloc(size * size * sizeof(double));
+	if (!mat)
+		filter.size = 0;
+	else {
+		stdev = sqrt(-(radius * radius) / (2 * log(1.0 / 255.0)));
+		for (x = 0; x < size; x++)
+			for (y = 0; y < size; y++)
+				mat[x + y * size] = gauss((double)(x - radius),
+							  (double)(y - radius),
+							  stdev);
+		filter = filter_create(size, mat);
+		free(mat);
+		filter_norm(&filter);
+	}
 	return filter;
 }
 

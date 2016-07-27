@@ -20,11 +20,6 @@
 
 int filtSelected = 0;
 
-double mat_gauss[] = {
-	1.0/16, 2.0/16, 1.0/16,
-	2.0/16, 4.0/16, 2.0/16,
-	1.0/16, 2.0/16, 1.0/16
-};
 double mat_sharp[] = {
 	 0, -1,  0,
 	-1,  5, -1,
@@ -68,7 +63,7 @@ double mat_ltSob[] = {
 	1, 0, -1
 };
 
-void selectFilter(struct Filter *filt, unsigned int size, double mat[], const char *filtName) {
+void selectFilter(struct Filter *filt, int size, double mat[], const char *filtName) {
 	struct Filter newFilt;
 	if (filtSelected)
 		printf("Cannot select %s; filter stacking is not yet supported\n", filtName);
@@ -85,11 +80,26 @@ void selectFilter(struct Filter *filt, unsigned int size, double mat[], const ch
 	}
 }
 
+/**
+ * Gets radius from optarg.
+ *
+ * @return Integer greater than 0 on success, 0 on failure.
+ */
+int getRadius() {
+        int radius;
+	char *end_p;
+	radius = strtol(optarg, &end_p, 10);
+	if (*end_p != '\0' || radius <= 0) {
+		printf("Invalid radius: %s\n", optarg);
+	        radius = 0;
+	}
+	return radius;
+}
+
 int main(int argc, char *argv[])
 {
 	const char *input_file = NULL;
 	const char *output_file = NULL;
-	char *end_p;
 	int c;
         int filtRadius;
 	int long_option_index = 0;
@@ -99,7 +109,7 @@ int main(int argc, char *argv[])
 		{"input", required_argument, NULL, 'i'},
 		{"output", required_argument, NULL, 'o'},
 		{"blur", optional_argument, NULL, 'b'},
-		{"gaussian", no_argument, NULL, 'g'},
+		{"gaussian", optional_argument, NULL, 'g'},
 		{"sharpen", no_argument, NULL, 's'},
 		{"unsharpen", no_argument, NULL, 'u'},
 		{"outline", no_argument, NULL, 'l'},
@@ -135,20 +145,38 @@ int main(int argc, char *argv[])
 				printf("Cannot select box blur; filter stacking is not yet supported\n");
 			else {
 				if (optarg) {
-					filtRadius = strtol(optarg, &end_p, 10);
-					if (*end_p != '\0' || filtRadius <= 0) {
-						printf("Radius invalid: %s\n", optarg);
-						break;
-					}
-				} else
+					filtRadius = getRadius();
+					if (filtRadius == 0) break;
+				} else {
 					filtRadius = 1;
-				filter = filter_boxblur((unsigned int)filtRadius * 2 + 1);
-				filtSelected = 1;
-				printf("Selected box blur with radius %d\n", filtRadius);
+				}
+				filter = filter_box_blur(filtRadius * 2 + 1);
+				if (filter.size == 0)
+					printf("Failed to select box blur\n");
+				else {
+					filtSelected = 1;
+					printf("Selected box blur with radius %d\n", filtRadius);
+				}
 			}
 			break;
 		case 'g':
-			selectFilter(&filter, size_gauss, mat_gauss, "gaussian");
+			if (filtSelected)
+				printf("Cannot select guassian blur; filter stacking is not yet supported\n");
+			else {
+				if (optarg) {
+					filtRadius = getRadius();
+					if (filtRadius == 0) break;
+				} else {
+					filtRadius = 1;
+				}
+				filter = filter_gauss_blur(filtRadius * 2 + 1);
+				if (filter.size == 0) {
+					printf("Failed to select guassian blur\n");
+				} else {
+					filtSelected = 1;
+					printf("Selected guassian blur with radius %d\n", filtRadius);
+				}
+			}
 			break;
 		case 's':
 			selectFilter(&filter, size_sharp, mat_sharp, "sharpen");

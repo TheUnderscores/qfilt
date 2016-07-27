@@ -17,7 +17,7 @@ struct Filter {
  *    is a row.
  * @return Complete filter on success, a filter with size 0 on failure.
  */
-struct Filter filter_create(unsigned int size, double *matrix);
+struct Filter filter_create(int size, double *matrix);
 
 /**
  * Deletes a filter created by `filter_create()`.
@@ -34,12 +34,29 @@ void filter_delete(struct Filter *filter);
 void filter_mult(struct Filter *filter, double mult);
 
 /**
+ * Normalizes a filter matrix.
+ *
+ * @param filter Filter to normalize.
+ */
+void filter_norm(struct Filter *filter);
+
+/**
  * Create a box blur filter.
  *
  * @param size Size of box blur.
  * @return Box blur filter on succuss, filter with `size` 0 on failure.
  */
-struct Filter filter_boxblur(unsigned int size);
+struct Filter filter_box_blur(int size);
+
+/**
+ * Create a guassian blur filter.
+ *
+ * @param radius Radius of blur filter. The size of the filter will be
+ *    twice this, plus one.
+ * @param stdev Standard deviation.
+ * @return Gaussian blur filter on success, filter with `size` 0 on failure.
+ */
+struct Filter filter_gauss_blur(int radius);
 
 /**
  * Apply a kernel filter to image data.
