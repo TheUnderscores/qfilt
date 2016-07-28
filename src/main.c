@@ -65,13 +65,13 @@ double mat_ltSob[] = {
 
 void selectFilter(struct Filter *filt, int size, double mat[], const char *filtName) {
 	struct Filter newFilt;
-	if (filtSelected)
+	if (filtSelected) {
 		printf("Cannot select %s; filter stacking is not yet supported\n", filtName);
-	else {
+	} else {
 		newFilt = filter_create(size, mat);
-		if (newFilt.size == 0)
+		if (newFilt.size == 0) {
 			printf("Failed to select %s\n", filtName);
-		else {
+		} else {
 			if (!filt) filter_delete(filt);
 			*filt = newFilt;
 			printf("Selected %s\n", filtName);
@@ -141,9 +141,9 @@ int main(int argc, char *argv[])
 			printf("Set output file to '%s'\n", output_file);
 			break;
 		case 'b':
-			if (filtSelected)
+			if (filtSelected) {
 				printf("Cannot select box blur; filter stacking is not yet supported\n");
-			else {
+			} else {
 				if (optarg) {
 					filtRadius = getRadius();
 					if (filtRadius == 0) break;
@@ -151,18 +151,18 @@ int main(int argc, char *argv[])
 					filtRadius = 1;
 				}
 				filter = filter_box_blur(filtRadius * 2 + 1);
-				if (filter.size == 0)
+				if (filter.size == 0) {
 					printf("Failed to select box blur\n");
-				else {
+				} else {
 					filtSelected = 1;
 					printf("Selected box blur with radius %d\n", filtRadius);
 				}
 			}
 			break;
 		case 'g':
-			if (filtSelected)
+			if (filtSelected) {
 				printf("Cannot select guassian blur; filter stacking is not yet supported\n");
-			else {
+			} else {
 				if (optarg) {
 					filtRadius = getRadius();
 					if (filtRadius == 0) break;
@@ -203,9 +203,9 @@ int main(int argc, char *argv[])
 			selectFilter(&filter, size_ltSob, mat_ltSob, "ltSob");
 			break;
 		case 'c':
-			if (filtSelected)
+			if (filtSelected) {
 				printf("Cannot select custom; filter stacking is not yet supported\n");
-			else {
+			} else {
 				printf("Selected custom '%s'\n", optarg);
 				printf("WARNING: custom filter loading not supported yet!\n");
 				filtSelected = 1;

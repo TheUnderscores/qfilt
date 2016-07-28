@@ -82,8 +82,9 @@ struct Filter filter_create(int size, double *matrix) {
 	if (!filter.array) {
 		filter.size = 0;
 		return filter;
-	} else
+	} else {
 		filter.size = (int)size;
+	}
 	memcpy(filter.array, matrix, size * size * sizeof(double));
 	return filter;
 }
@@ -111,9 +112,9 @@ struct Filter filter_box_blur(int size) {
 	double *mat;
         int i;
 	mat = malloc(size * size * sizeof(double));
-	if (!mat)
+	if (!mat) {
 		filter.size = 0;
-	else {
+	} else {
 		for (i = 0; i < size * size; i++) mat[i] = 1;
 		filter = filter_create(size, mat);
 		free(mat);
@@ -129,9 +130,9 @@ struct Filter filter_gauss_blur(int radius) {
 	int size, x, y;
 	size = radius * 2 + 1;
 	mat = malloc(size * size * sizeof(double));
-	if (!mat)
+	if (!mat) {
 		filter.size = 0;
-	else {
+	} else {
 		stdev = sqrt(-(radius * radius) / (2 * log(1.0 / 255.0)));
 		for (x = 0; x < size; x++)
 			for (y = 0; y < size; y++)
