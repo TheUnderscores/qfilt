@@ -8,7 +8,7 @@ set(CMAKE_C_FLAGS "-Wall -Wextra -Wshadow -Wcast-align -Wwrite-strings -Winline 
 -Wmissing-format-attribute -Wmissing-include-dirs -Wno-multichar -Wshadow \
 -Wno-sign-compare -Wswitch -Wno-pragmas -Wno-unused-but-set-parameter \
 -Wno-unused-but-set-variable -Wno-unused-result -Wwrite-strings \
--Wdisabled-optimization -Wpointer-arith ")
+-Wdisabled-optimization -Wpointer-arith -Wconversion")
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Og")
 
